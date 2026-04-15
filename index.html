@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScreenerLabs</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#2c2c2a;color:#fff;height:100vh;display:flex;overflow:hidden;font-size:14px}
+.sidebar{width:250px;background:#1e1e1c;border-right:1px solid #333;display:flex;flex-direction:column;flex-shrink:0}
+.logo-area{padding:22px 18px 18px;border-bottom:1px solid #333;display:flex;align-items:center;gap:10px}
+.wordmark{font-size:16px;font-weight:700;color:#fff;letter-spacing:-0.4px}
+.nav-section{padding:18px 18px 5px;font-size:11px;color:#555;letter-spacing:0.05em;font-weight:500}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:2px 8px;cursor:pointer;font-size:14px;font-weight:600;color:#888;border-radius:8px;transition:all 0.1s;user-select:none}
+.nav-item:hover{background:#2a2a28;color:#ccc}
+.nav-item.active{background:#2e2e2c;color:#fff}
+.nav-item svg{flex-shrink:0}
+.sidebar-footer{padding:16px 18px;border-top:1px solid #333;margin-top:auto}
+.sidebar-footer-text{font-size:12px;color:#555}
+.sidebar-footer-status{font-size:12px;color:#e8845a;margin-top:4px;display:flex;align-items:center;gap:6px;font-weight:600}
+.dot{width:6px;height:6px;border-radius:50%;background:#e8845a;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:16px 26px;border-bottom:1px solid #333;display:flex;align-items:center;justify-content:space-between;background:#1e1e1c;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.3px}
+.status-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:#e8845a;background:#2a1e18;padding:5px 12px;border-radius:20px;border:1px solid #5a3020;font-weight:600}
+.content{flex:1;overflow-y:auto;padding:22px 26px;display:flex;flex-direction:column;gap:18px}
+.cards-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.card{background:#252523;border:1px solid #333;border-radius:12px;padding:18px 20px}
+.card-label{font-size:11px;color:#666;margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
+.card-value{font-size:26px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+.card-sub{font-size:12px;color:#555;margin-top:5px}
+.chat-container{background:#252523;border:1px solid #333;border-radius:12px;flex:1;display:flex;flex-direction:column;min-height:340px}
+.chat-header{padding:14px 18px;border-bottom:1px solid #333;font-size:13px;font-weight:700;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.chat-messages{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:12px;align-items:flex-start}
+.msg-avatar{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.msg-user .msg-avatar{background:#e8845a;color:#fff}
+.msg-agent .msg-avatar{background:#333;color:#aaa;border:1px solid #444}
+.msg-bubble{font-size:14px;line-height:1.65;color:#aaa;padding:10px 14px;background:#1e1e1c;border-radius:10px;max-width:85%}
+.msg-user .msg-bubble{color:#fff;background:#3a2820}
+.tool-call{font-size:12px;color:#e8845a;background:#2a1e18;border:1px solid #5a3020;border-radius:6px;padding:4px 10px;margin:4px 0;display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.tool-call::before{content:'⚙';font-size:11px}
+.chat-input-area{padding:14px 18px;border-top:1px solid #333;display:flex;gap:10px}
+.chat-input{flex:1;background:#1e1e1c;border:1px solid #3a3a38;border-radius:10px;padding:11px 16px;font-size:14px;color:#fff;outline:none;font-family:'Inter',sans-serif}
+.chat-input::placeholder{color:#555}
+.chat-input:focus{border-color:#666}
+.send-btn{background:#e8845a;border:none;border-radius:10px;padding:11px 22px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;transition:background 0.12s}
+.send-btn:hover{background:#d4704a}
+.send-btn:disabled{opacity:0.4;cursor:not-allowed}
+.typing{display:flex;gap:5px;align-items:center;padding:10px 14px}
+.typing span{width:6px;height:6px;border-radius:50%;background:#555;animation:blink 1.2s infinite}
+.typing span:nth-child(2){animation-delay:0.2s}
+.typing span:nth-child(3){animation-delay:0.4s}
+@keyframes blink{0%,80%,100%{opacity:0.2}40%{opacity:1}}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#444;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo-area">
+    <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
+      <rect x="2" y="4" width="10" height="10" rx="1" transform="rotate(45 7 9)" fill="#e8845a" opacity="0.4"/>
+      <rect x="8" y="4" width="10" height="10" rx="1" transform="rotate(45 13 9)" fill="#e8845a"/>
+    </svg>
+    <span class="wordmark">ScreenerLabs</span>
+  </div>
+  <div class="nav-section">Scanners</div>
+  <div class="nav-item active" onclick="setTab(this,'Scanner 1 · Long','privatefitout-design/crypto-scanner')">
+    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,10 4,6 7,8 10,3 13,4"/></svg>
+    Scanner 1 · Long
+  </div>
+  <div class="nav-item" onclick="setTab(this,'Scanner 2 · Short','privatefitout-design/crypto-scanner')">
+    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,3 4,7 7,5 10,9 13,8"/></svg>
+    Scanner 2 · Short
+  </div>
+  <div class="nav-section">Infra</div>
+  <div class="nav-item" onclick="setTab(this,'GitHub','privatefitout-design/crypto-scanner')">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.13 1 1 4.13 1 8c0 3.09 2 5.71 4.79 6.64.35.06.48-.15.48-.34v-1.2c-1.96.43-2.37-.94-2.37-.94-.32-.81-.78-1.03-.78-1.03-.64-.44.05-.43.05-.43.7.05 1.07.72 1.07.72.62 1.07 1.63.76 2.03.58.06-.45.24-.76.44-.93-1.56-.18-3.2-.78-3.2-3.47 0-.77.27-1.39.72-1.88-.07-.18-.31-.89.07-1.85 0 0 .59-.19 1.93.72A6.7 6.7 0 018 4.82c.6 0 1.2.08 1.76.23 1.34-.91 1.93-.72 1.93-.72.38.96.14 1.67.07 1.85.45.49.72 1.11.72 1.88 0 2.7-1.64 3.29-3.21 3.47.25.22.48.65.48 1.31v1.94c0 .19.13.4.48.34A7.001 7.001 0 0015 8c0-3.87-3.13-7-7-7z"/></svg>
+    GitHub
+  </div>
+  <div class="nav-item" onclick="setTab(this,'Railway','')">
+    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="3" width="12" height="8" rx="2"/><line x1="4" y1="3" x2="4" y2="1"/><line x1="10" y1="3" x2="10" y2="1"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
+    Railway
+  </div>
+  <div class="nav-item" onclick="setTab(this,'Telegram','')">
+    <svg width="16" height="16" viewBox="0 0 14 14" fill="currentColor"><path d="M12.1 1.8L1.2 6.1c-.72.29-.71.69-.13.87l2.72.85 1.05 3.25c.13.36.06.5.44.5.28 0 .41-.14.57-.29l1.36-1.33 2.83 2.09c.52.29.9.14 1.03-.48l1.86-8.77c.19-.76-.29-1.1-.85-.85z"/></svg>
+    Telegram
+  </div>
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text">Railway · EU region</div>
+    <div class="sidebar-footer-status"><span class="dot"></span>Online</div>
+  </div>
+</div>
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span class="topbar-title" id="page-title">Scanner 1 · Long</span>
+      <div class="status-pill"><span class="dot"></span>Railway connected</div>
+    </div>
+    <div style="font-size:12px;color:#444" id="repo-label">privatefitout-design/crypto-scanner</div>
+  </div>
+  <div class="content">
+    <div class="cards-row">
+      <div class="card">
+        <div class="card-label">Последний скан</div>
+        <div class="card-value" id="last-scan">--:--</div>
+        <div class="card-sub">каждые 30 мин</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Сигналов сегодня</div>
+        <div class="card-value" style="color:#e8845a">—</div>
+        <div class="card-sub">PRECISION + WIDE</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Статус агента</div>
+        <div class="card-value" style="font-size:16px;padding-top:4px;display:flex;align-items:center;gap:8px"><span class="dot"></span>Ready</div>
+        <div class="card-sub">ожидает команды</div>
+      </div>
+    </div>
+    <div class="chat-container">
+      <div class="chat-header">Агент <span id="agent-status" style="color:#e8845a;font-size:12px;font-weight:600">● готов</span></div>
+      <div class="chat-messages" id="messages">
+        <div class="msg msg-agent">
+          <div class="msg-avatar">SL</div>
+          <div><div class="msg-bubble">Привет, Said. Я готов. Говори что делать — пушу в GitHub, Railway задеплоит автоматом.</div></div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <input class="chat-input" id="user-input" placeholder="Дай команду агенту..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"/>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">Отправить</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+let conversationHistory=[];let currentRepo='privatefitout-design/crypto-scanner';
+function setTab(el,title,repo){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');document.getElementById('page-title').textContent=title;document.getElementById('repo-label').textContent=repo;if(repo)currentRepo=repo;}
+function addMessage(role,text,toolCalls){const msgs=document.getElementById('messages');const div=document.createElement('div');div.className=`msg msg-${role==='user'?'user':'agent'}`;let toolHtml='';if(toolCalls&&toolCalls.length>0){toolHtml=toolCalls.map(t=>`<div class="tool-call">${t.name}(${JSON.stringify(t.input).slice(0,60)}...)</div>`).join('');}div.innerHTML=`<div class="msg-avatar">${role==='user'?'SA':'SL'}</div><div>${toolHtml}<div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div></div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
+function showTyping(){const msgs=document.getElementById('messages');const div=document.createElement('div');div.className='msg msg-agent';div.id='typing-indicator';div.innerHTML=`<div class="msg-avatar">SL</div><div class="typing"><span></span><span></span><span></span></div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
+function removeTyping(){const t=document.getElementById('typing-indicator');if(t)t.remove();}
+async function sendMessage(){const input=document.getElementById('user-input');const text=input.value.trim();if(!text)return;input.value='';document.getElementById('send-btn').disabled=true;document.getElementById('agent-status').textContent='● думает...';document.getElementById('agent-status').style.color='#aaa';addMessage('user',text);conversationHistory.push({role:'user',content:text});showTyping();try{const resp=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversationHistory,repo:currentRepo})});const data=await resp.json();removeTyping();if(data.error){addMessage('agent','❌ Ошибка: '+data.error);}else{addMessage('agent',data.response,data.tool_calls);conversationHistory.push({role:'assistant',content:data.response});}document.getElementById('last-scan').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}catch(e){removeTyping();addMessage('agent','❌ Ошибка соединения: '+e.message);}document.getElementById('send-btn').disabled=false;document.getElementById('agent-status').textContent='● готов';document.getElementById('agent-status').style.color='#e8845a';}
+</script>
+</body>
+</html>
