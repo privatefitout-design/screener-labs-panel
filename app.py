@@ -1,49 +1,170 @@
-from flask import Flask, render_template_string, request, jsonify, session
+from flask import Flask, render_template_string, request, jsonify
 import requests
 import base64
 import json
 import os
 
-app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'screener-labs-2026')
+app = Flask(**name**)
+app.secret_key = os.environ.get(‘SECRET_KEY’, ‘screener-labs-2026’)
 
-ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
-GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
-GITHUB_REPO = os.environ.get('GITHUB_REPO', 'privatefitout-design/crypto-scanner')
-RAILWAY_TOKEN = os.environ.get('RAILWAY_TOKEN', '')
+ANTHROPIC_API_KEY = os.environ.get(‘ANTHROPIC_API_KEY’, ‘’)
+GITHUB_TOKEN = os.environ.get(‘GITHUB_TOKEN’, ‘’)
+GITHUB_REPO = os.environ.get(‘GITHUB_REPO’, ‘privatefitout-design/crypto-scanner’)
 
-@app.route('/')
+@app.route(’/’)
 def index():
-    with open(os.path.join(os.path.dirname(__file__), 'index.html')) as f:
-        return f.read()
+with open(os.path.join(os.path.dirname(**file**), ‘index.html’)) as f:
+return f.read()
 
-@app.route('/api/chat', methods=['POST'])
+@app.route(’/api/debug’, methods=[‘POST’])
+def debug_symbol():
+“”“Debug a symbol using Managed Agents API with full internet access”””
+data = request.json
+symbol = data.get(‘symbol’, ‘BTCUSDT’).upper()
+
+```
+# Read scanner code
+scanner_code = ""
+try:
+    with open(os.path.join(os.path.dirname(__file__), 'scanner1_accumulation.py')) as f:
+        scanner_code = f.read()
+except:
+    pass
+
+# Use Anthropic API with tools to access Binance directly
+response = requests.post(
+    'https://api.anthropic.com/v1/messages',
+    headers={
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
+    },
+    json={
+        'model': 'claude-haiku-4-5-20251001',
+        'max_tokens': 2000,
+        'tools': [
+            {
+                'type': 'web_fetch_20260209',
+                'name': 'web_fetch'
+            }
+        ],
+        'system': f"""You are a crypto scanner debug agent. 
+```
+
+Use web_fetch to get real data from Binance Futures API and analyze the symbol.
+Scanner logic reference:
+{scanner_code[:4000]}
+
+For DEBUG analysis:
+
+1. Fetch daily klines: https://fapi.binance.com/fapi/v1/klines?symbol=SYMBOL&interval=1d&limit=200
+1. Fetch 1h klines: https://fapi.binance.com/fapi/v1/klines?symbol=SYMBOL&interval=1h&limit=30
+1. Fetch OI history: https://fapi.binance.com/fapi/v1/openInterestHist?symbol=SYMBOL&period=1h&limit=24
+   Then analyze using the scanner logic and report each filter result.”””,
+   ‘messages’: [
+   {‘role’: ‘user’, ‘content’: f’DEBUG {symbol} - fetch real Binance data and run full scanner analysis. Report each filter: EMA compression, slope, amplitude, NATR, OI angle, OI growth, antispike. Show final score and tier.’}
+   ]
+   },
+   timeout=60
+   )
+   
+   if response.status_code != 200:
+   return jsonify({‘error’: response.text}), 500
+   
+   result = response.json()
+   text = ‘’
+   for block in result.get(‘content’, []):
+   if block.get(‘type’) == ‘text’:
+   text += block[‘text’]
+   
+   return jsonify({‘response’: text, ‘symbol’: symbol})
+
+@app.route(’/api/chat’, methods=[‘POST’])
 def chat():
-    data = request.json
-    messages = data.get('messages', [])
-    
-    system_prompt = """You are an autonomous agent for ScreenerLabs crypto scanner project.
-You have tools to manage GitHub and Railway. The owner is Said Hodjaev — Dubai entrepreneur.
+data = request.json
+messages = data.get(‘messages’, [])
 
-Project: crypto scanner on Railway (EU region), GitHub repo: privatefitout-design/crypto-scanner
-Scanner 1 (LONG) is live. Scanner 2 (SHORT) waiting for Coinglass API.
+```
+system_prompt = """You are ScreenerLabs agent for Said Hodjaev.
+```
 
-When Said gives you a task:
-1. Analyze what needs to be done
-2. Use the appropriate tool (github_get_file, github_update_file, github_create_file, railway_status)
-3. Report back concisely what you did
+You manage crypto-scanner on Railway/GitHub.
+Tools: github_get_file, github_update_file, github_list_files.
+Respond in Russian. Be concise.”””
 
-Always respond in Russian. Be concise. Code must be immediately working.
+```
+response = requests.post(
+    'https://api.anthropic.com/v1/messages',
+    headers={
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
+    },
+    json={
+        'model': 'claude-haiku-4-5-20251001',
+        'max_tokens': 2000,
+        'system': system_prompt,
+        'tools': [
+            {
+                'name': 'github_get_file',
+                'description': 'Get file from GitHub',
+                'input_schema': {
+                    'type': 'object',
+                    'properties': {
+                        'path': {'type': 'string'}
+                    },
+                    'required': ['path']
+                }
+            },
+            {
+                'name': 'github_update_file',
+                'description': 'Update file in GitHub',
+                'input_schema': {
+                    'type': 'object',
+                    'properties': {
+                        'path': {'type': 'string'},
+                        'content': {'type': 'string'},
+                        'message': {'type': 'string'}
+                    },
+                    'required': ['path', 'content', 'message']
+                }
+            },
+            {
+                'name': 'github_list_files',
+                'description': 'List files in GitHub repo',
+                'input_schema': {
+                    'type': 'object',
+                    'properties': {},
+                    'required': []
+                }
+            }
+        ],
+        'messages': messages
+    }
+)
 
-Available tools:
-- github_get_file: get file content from repo
-- github_update_file: update/create file in repo  
-- railway_status: check Railway deployment status
-- github_list_files: list repo files
+if response.status_code != 200:
+    return jsonify({'error': response.text}), 500
 
-When updating scanner code, always preserve existing logic unless explicitly told to change it."""
+result = response.json()
 
-    response = requests.post(
+# Process tool calls
+tool_results = []
+for block in result.get('content', []):
+    if block.get('type') == 'tool_use':
+        tool_result = execute_tool(block['name'], block.get('input', {}))
+        tool_results.append({
+            'type': 'tool_result',
+            'tool_use_id': block['id'],
+            'content': json.dumps(tool_result)
+        })
+
+if tool_results:
+    messages_with_tools = messages + [
+        {'role': 'assistant', 'content': result['content']},
+        {'role': 'user', 'content': tool_results}
+    ]
+    follow_up = requests.post(
         'https://api.anthropic.com/v1/messages',
         headers={
             'x-api-key': ANTHROPIC_API_KEY,
@@ -51,191 +172,64 @@ When updating scanner code, always preserve existing logic unless explicitly tol
             'content-type': 'application/json'
         },
         json={
-            'model': 'claude-sonnet-4-20250514',
+            'model': 'claude-haiku-4-5-20251001',
             'max_tokens': 2000,
             'system': system_prompt,
-            'tools': [
-                {
-                    'name': 'github_get_file',
-                    'description': 'Get file content from GitHub repository',
-                    'input_schema': {
-                        'type': 'object',
-                        'properties': {
-                            'repo': {'type': 'string', 'description': 'repo owner/name'},
-                            'path': {'type': 'string', 'description': 'file path'}
-                        },
-                        'required': ['repo', 'path']
-                    }
-                },
-                {
-                    'name': 'github_update_file',
-                    'description': 'Create or update a file in GitHub repository',
-                    'input_schema': {
-                        'type': 'object',
-                        'properties': {
-                            'repo': {'type': 'string'},
-                            'path': {'type': 'string'},
-                            'content': {'type': 'string', 'description': 'file content'},
-                            'message': {'type': 'string', 'description': 'commit message'}
-                        },
-                        'required': ['repo', 'path', 'content', 'message']
-                    }
-                },
-                {
-                    'name': 'github_list_files',
-                    'description': 'List files in GitHub repository',
-                    'input_schema': {
-                        'type': 'object',
-                        'properties': {
-                            'repo': {'type': 'string'},
-                            'path': {'type': 'string', 'description': 'directory path, default root'}
-                        },
-                        'required': ['repo']
-                    }
-                }
-            ],
-            'messages': messages
+            'messages': messages_with_tools
         }
     )
-    
-    if response.status_code != 200:
-        return jsonify({'error': response.text}), 500
-    
-    result = response.json()
-    
-    # Process tool calls
-    tool_results = []
-    for block in result.get('content', []):
-        if block.get('type') == 'tool_use':
-            tool_result = execute_tool(block['name'], block['input'])
-            tool_results.append({
-                'type': 'tool_result',
-                'tool_use_id': block['id'],
-                'content': json.dumps(tool_result)
-            })
-    
-    # If there were tool calls, continue the conversation
-    if tool_results:
-        messages_with_tools = messages + [
-            {'role': 'assistant', 'content': result['content']},
-            {'role': 'user', 'content': tool_results}
-        ]
-        
-        follow_up = requests.post(
-            'https://api.anthropic.com/v1/messages',
-            headers={
-                'x-api-key': ANTHROPIC_API_KEY,
-                'anthropic-version': '2023-06-01',
-                'content-type': 'application/json'
-            },
-            json={
-                'model': 'claude-sonnet-4-20250514',
-                'max_tokens': 2000,
-                'system': system_prompt,
-                'tools': result.get('content', []),
-                'messages': messages_with_tools
-            }
-        )
-        if follow_up.status_code == 200:
-            result = follow_up.json()
-    
-    text_response = ''
-    for block in result.get('content', []):
-        if block.get('type') == 'text':
-            text_response += block['text']
-    
-    return jsonify({
-        'response': text_response,
-        'tool_calls': [b for b in result.get('content', []) if b.get('type') == 'tool_use'],
-        'stop_reason': result.get('stop_reason')
-    })
+    if follow_up.status_code == 200:
+        result = follow_up.json()
 
+text = ''
+for block in result.get('content', []):
+    if block.get('type') == 'text':
+        text += block['text']
+
+return jsonify({
+    'response': text,
+    'tool_calls': [b for b in result.get('content', []) if b.get('type') == 'tool_use']
+})
+```
 
 def execute_tool(name, input_data):
-    token = GITHUB_TOKEN
-    headers = {
-        'Authorization': f'token {token}',
-        'Accept': 'application/vnd.github.v3+json'
-    }
-    
-    if name == 'github_get_file':
-        repo = input_data.get('repo', GITHUB_REPO)
-        path = input_data['path']
-        r = requests.get(f'https://api.github.com/repos/{repo}/contents/{path}', headers=headers)
-        if r.status_code == 200:
-            data = r.json()
-            content = base64.b64decode(data['content']).decode('utf-8')
-            return {'success': True, 'content': content, 'sha': data['sha']}
-        return {'success': False, 'error': r.text}
-    
-    elif name == 'github_update_file':
-        repo = input_data.get('repo', GITHUB_REPO)
-        path = input_data['path']
-        content = input_data['content']
-        message = input_data.get('message', 'Update via ScreenerLabs agent')
-        
-        # Check if file exists to get sha
-        r = requests.get(f'https://api.github.com/repos/{repo}/contents/{path}', headers=headers)
-        sha = r.json().get('sha') if r.status_code == 200 else None
-        
-        payload = {
-            'message': message,
-            'content': base64.b64encode(content.encode()).decode()
-        }
-        if sha:
-            payload['sha'] = sha
-        
-        r = requests.put(
-            f'https://api.github.com/repos/{repo}/contents/{path}',
-            headers=headers,
-            json=payload
-        )
-        if r.status_code in [200, 201]:
-            return {'success': True, 'message': f'File {path} updated. Railway will auto-deploy.'}
-        return {'success': False, 'error': r.text}
-    
-    elif name == 'github_list_files':
-        repo = input_data.get('repo', GITHUB_REPO)
-        path = input_data.get('path', '')
-        url = f'https://api.github.com/repos/{repo}/contents/{path}'
-        r = requests.get(url, headers=headers)
-        if r.status_code == 200:
-            files = [{'name': f['name'], 'type': f['type'], 'path': f['path']} for f in r.json()]
-            return {'success': True, 'files': files}
-        return {'success': False, 'error': r.text}
-    
-    return {'success': False, 'error': f'Unknown tool: {name}'}
+headers = {
+‘Authorization’: f’token {GITHUB_TOKEN}’,
+‘Accept’: ‘application/vnd.github.v3+json’
+}
 
-
-@app.route('/api/github/files', methods=['GET'])
-def get_files():
-    repo = request.args.get('repo', GITHUB_REPO)
-    token = GITHUB_TOKEN
-    r = requests.get(
-        f'https://api.github.com/repos/{repo}/contents/',
-        headers={'Authorization': f'token {token}'}
-    )
+```
+if name == 'github_get_file':
+    path = input_data.get('path', '')
+    r = requests.get(f'https://api.github.com/repos/{GITHUB_REPO}/contents/{path}', headers=headers)
     if r.status_code == 200:
-        return jsonify(r.json())
-    return jsonify({'error': r.text}), 400
+        content = base64.b64decode(r.json()['content']).decode('utf-8')
+        return {'success': True, 'content': content, 'sha': r.json()['sha']}
+    return {'success': False, 'error': r.text}
 
+elif name == 'github_update_file':
+    path = input_data.get('path', '')
+    content = input_data.get('content', '')
+    message = input_data.get('message', 'Update via ScreenerLabs')
+    r = requests.get(f'https://api.github.com/repos/{GITHUB_REPO}/contents/{path}', headers=headers)
+    sha = r.json().get('sha') if r.status_code == 200 else None
+    payload = {'message': message, 'content': base64.b64encode(content.encode()).decode()}
+    if sha:
+        payload['sha'] = sha
+    r = requests.put(f'https://api.github.com/repos/{GITHUB_REPO}/contents/{path}', headers=headers, json=payload)
+    if r.status_code in [200, 201]:
+        return {'success': True, 'message': f'{path} updated. Railway auto-deploys.'}
+    return {'success': False, 'error': r.text}
 
-@app.route('/api/railway/status', methods=['GET'])
-def railway_status():
-    # Railway GraphQL API
-    r = requests.post(
-        'https://backboard.railway.app/graphql/v2',
-        headers={
-            'Authorization': f'Bearer {RAILWAY_TOKEN}',
-            'Content-Type': 'application/json'
-        },
-        json={'query': '{ me { projects { edges { node { name deployments { edges { node { status createdAt } } } } } } } }'}
-    )
+elif name == 'github_list_files':
+    r = requests.get(f'https://api.github.com/repos/{GITHUB_REPO}/contents/', headers=headers)
     if r.status_code == 200:
-        return jsonify(r.json())
-    return jsonify({'error': 'Railway API unavailable'}), 400
+        return {'success': True, 'files': [f['name'] for f in r.json()]}
+    return {'success': False, 'error': r.text}
 
+return {'success': False, 'error': 'Unknown tool'}
+```
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+if **name** == ‘**main**’:
+port = int(os.environ.get(‘PORT’, 5000))
+app.run(host=‘0.0.0.0’, port=port)
